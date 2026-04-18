@@ -1,7 +1,16 @@
+import os
 from functools import lru_cache
+from typing import Self
 
-from pydantic import field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _default_database_url() -> str:
+    # Vercel serverless: deployment dir is not writable; /tmp is.
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV"):
+        return "sqlite:////tmp/preterm.db"
+    return "sqlite:///./preterm.db"
 
 
 class Settings(BaseSettings):
@@ -13,7 +22,7 @@ class Settings(BaseSettings):
     app_reload: bool = True
     app_workers: int = 1
     log_level: str = "info"
-    database_url: str = "sqlite:///./preterm.db"
+    database_url: str = Field(default_factory=_default_database_url)
     jwt_secret: str = "change-me"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24
@@ -55,6 +64,15 @@ class Settings(BaseSettings):
         extra="ignore",
         env_ignore_empty=True,
     )
+
+    @model_validator(mode="after")
+    def normalize_postgres_url(self) -> Self:
+        url = self.database_url.strip()
+        if url.startswith("postgres://"):
+            self.database_url = "postgresql+psycopg2://" + url.removeprefix("postgres://")
+        elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
+            self.database_url = "postgresql+psycopg2://" + url.removeprefix("postgresql://")
+        return self
 
     @property
     def cors_origin_list(self) -> list[str]:

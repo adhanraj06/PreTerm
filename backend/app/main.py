@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -14,15 +15,21 @@ from app.db.session import SessionLocal
 from app.services.sentiment_service import ensure_vader_ready
 from app.static import attach_frontend
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    initialize_database()
-    ensure_vader_ready()
+    try:
+        initialize_database()
+        ensure_vader_ready()
 
-    with SessionLocal() as db:
-        seed_demo_user(db)
-        seed_markets(db)
+        with SessionLocal() as db:
+            seed_demo_user(db)
+            seed_markets(db)
+    except Exception:
+        logger.exception("PreTerm startup failed (database seed or migrations)")
+        raise
 
     yield
 
