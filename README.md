@@ -1,127 +1,110 @@
 # PreTerm
 
-PreTerm is a personalized prediction-market workstation. It extends the original PreTerm MVP by preserving the three original pillars, then adding persistent user workflows, deeper event interpretation, and market-aware planning support in one cohesive product.
+**PreTerm** is a prediction-market workstation: one place to watch **Kalshi-style binary contracts** (with seeded fallback), read **event briefs** and probability history, **map headlines** to the right market, run **sentiment** on text or feeds, **research** equities, SEC filings, and **FRED** macro series, save **watchlists** and **desk layouts**, plan real-world dates with **suggested contracts**, tune **alerts**, and chat with a **context-aware Copilot**.
 
-## What PreTerm Does
+This repository is the full-stack application (FastAPI + React). Implied prices are **market consensus**, not guarantees about outcomes.
 
-PreTerm is built around three core product surfaces:
+**Repository:** [github.com/adhanraj06/PreTerm](https://github.com/adhanraj06/PreTerm)
 
-- `Market Monitor`
-  - browse active contracts
-  - inspect current probability, recent move, and status
-  - pin important markets into the desk
-- `Event Brief`
-  - explain why a market matters now
-  - structure bull / base / bear framing
-  - connect price moves to timeline entries, headlines, and macro context
-- `Headline Map`
-  - map incoming news into the most relevant market
-  - explain directional impact and why the event matters
+---
 
-The final product adds:
+## Features
 
-- authenticated user profiles
-- watchlists and saved views
-- alert preferences and notifications
-- market copilot with Gemini fallback behavior
-- Kalshi-backed market data with seeded fallback
-- FRED macro context
-- optional company / asset context
-- in-app hedge planner for real-world events
+| Area | What you get |
+|------|----------------|
+| **Monitor** | Contract grid with filters, pins, smart sort, closing-date view; full detail with chart, brief, timeline. |
+| **Event brief** | Summary, why now, what changed, drivers, catalysts, risks, bull/base/bear, scenario workbench. |
+| **Headlines** | Headline → ranked markets; VADER sentiment on text, URLs, or Reddit hot; BBC/RSS live wire. |
+| **Research** | Yahoo quote + news bundle, SEC EDGAR filings, FRED macro catalog (API or bundled `fred.csv`). |
+| **Watchlists & saved views** | Named lists and snapshots of desk mode, search, category, pins. |
+| **Planner** | Dated real-world events with concern type → suggested monitoring contracts. |
+| **Settings** | Profile snapshot, alert rules (move threshold, headline mapping, probability range). |
+| **Copilot** | Right-rail assistant using selected market, pins, watchlists, last headline map; Gemini when configured, mock fallback otherwise. |
+
+---
 
 ## Stack
 
-- Backend: `FastAPI`
-- Frontend: `React + Vite + TypeScript`
-- Database: `SQLite` for local development
-- Python env: `backend/venv`
-- Root developer interface: `Makefile`
+- **Backend:** Python 3, **FastAPI**, SQLAlchemy, SQLite (default), httpx, optional yfinance / edgartools / NLTK (VADER).
+- **Frontend:** **React 18**, **TypeScript**, **Vite**, **React Router**, **Recharts**.
+- **Integrations (optional):** Kalshi Trade API, FRED API or local CSV, Yahoo Finance, SEC EDGAR, Reddit/RSS, Google Gemini.
 
-## Repo Layout
+---
 
-- `backend/`
-  - API, services, models, integrations, database setup
-- `frontend/`
-  - React app, workstation UI, routes, styles
-- `docs/`
-  - final prep and demo documentation
-- `scripts/`
-  - local dev helpers
+## Quick start
 
-## Local Development
+1. **Clone and env**
 
-1. Copy the environment template:
+   ```bash
+   git clone git@github.com:adhanraj06/PreTerm.git
+   cd PreTerm
+   cp .env.example .env
+   ```
 
-```bash
-cp .env.example .env
+2. **Install** (creates `backend/venv`, installs Python + npm deps)
+
+   ```bash
+   make install
+   ```
+
+3. **Run** (backend + frontend together)
+
+   ```bash
+   make run
+   ```
+
+4. **Open**
+
+   - App: [http://localhost:5173](http://localhost:5173)
+   - API health: [http://localhost:8000/api/health](http://localhost:8000/api/health)
+
+**Demo login** (when `SEED_DEMO_USER` is true, see `.env.example`): e.g. `demo@preterm.local` / `demo12345`.
+
+Other useful targets: `make backend`, `make frontend`, `make build-frontend`, `make clean`, `make reset`. See the [Makefile](Makefile) for the full list.
+
+---
+
+## Repository layout
+
+```text
+backend/app/     # FastAPI app: api/, services/, models/, integrations/, db/
+frontend/src/    # React: app/, features/, components/, api/, types/
+docs/            # Documentation (see below)
+scripts/         # venv, install, run, bootstrap, clean, reset
+fred.csv         # Optional wide monthly macro table for FRED-offline mode
 ```
 
-2. Install backend and frontend dependencies:
+---
 
-```bash
-make install
-```
+## Configuration
 
-3. Start the app:
+- **Environment:** Copy [.env.example](.env.example) to `.env` and adjust. Secrets (JWT, API keys) stay out of git (see [.gitignore](.gitignore)).
+- **Kalshi:** Set `MARKET_DATA_PROVIDER=kalshi` when you want live markets; use `seeded` or rely on `KALSHI_FALLBACK_TO_SEEDED=true` for resilient demos.
+- **Macro:** Set `FRED_API_KEY` for the live FRED API, or rely on `fred.csv` at the repo root / `FRED_CSV_PATH`.
+- **Copilot / brief LLM:** `GEMINI_API_KEY` and optional `KALSHI_BRIEF_USE_GEMINI`.
 
-```bash
-make run
-```
+Detailed matrices live in [docs/SETUP.md](docs/SETUP.md) and [docs/DEV.md](docs/DEV.md) (Part II).
 
-Default local URLs:
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8000`
-- Health check: `http://localhost:8000/api/health`
-
-Useful commands:
-
-- `make venv`
-- `make install`
-- `make backend`
-- `make frontend`
-- `make run`
-- `make build-frontend`
-- `make backend-prod`
-- `make clean`
-- `make reset`
-- `make reinstall`
-
-## Deployment Readiness
-
-The repo stays local-first, but it now has a cleaner path toward deployment:
-
-- environment-driven backend settings
-- ASGI entrypoint at `backend/app/asgi.py`
-- production backend runner via `make backend-prod`
-- Vite config supports env-driven host, port, and base path
-- optional root `Dockerfile` for a single-container deployment path
-- optional static frontend serving from the FastAPI app when `SERVE_FRONTEND=true`
-
-This is still optimized for local development, but the structure is clean enough to move toward:
-
-- a single Docker deployment
-- split frontend/backend deployment
-- Postgres later if SQLite becomes limiting
-
-## Environment Variables
-
-See `docs/SETUP.md` for the detailed matrix. At a high level:
-
-- always review `.env`
-- keep `MARKET_DATA_PROVIDER=seeded` for deterministic local work
-- add only the API keys you need for the demo you plan to give
+---
 
 ## Documentation
 
-- Setup and verification: `docs/SETUP.md`
-- Full final demo script: `docs/DEMO.md`
+| Doc | Audience |
+|-----|----------|
+| [docs/DEMO.md](docs/DEMO.md) | **Product:** every page, control, flow, demo script, FAQ. |
+| [docs/DEV.md](docs/DEV.md) | **Product + engineering:** same product depth as DEMO, plus APIs, data model, integrations, ops. |
+| [docs/SETUP.md](docs/SETUP.md) | Environment and verification steps. |
 
-## Current Status
+---
 
-PreTerm is structured as a final-project-ready demo application:
+## Deployment notes
 
-- strong local development workflow
-- polished workstation UI
-- deterministic fallback paths for live integrations
-- detailed setup and demo prep docs
+- **ASGI:** [backend/app/asgi.py](backend/app/asgi.py); production helper: `make backend-prod`.
+- **Docker:** [Dockerfile](Dockerfile) in repo root.
+- **Single host:** build the SPA (`make build-frontend`), set `SERVE_FRONTEND=true` and `FRONTEND_DIST_DIR` so FastAPI can serve static assets alongside `/api`.
+
+---
+
+## License
+
+Add a `LICENSE` file if you intend open-source distribution; none is bundled by default in this snapshot.
