@@ -1,0 +1,12 @@
+.git
+.gitignore
+backend/venv
+frontend/node_modules
+frontend/dist
+__pycache__
+*.pyc
+*.pyo
+.env
+preterm.db
+backend/preterm.db
+dist

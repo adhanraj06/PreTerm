@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+backend/venv/
+backend/.venv/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Environment and local data
+.env
+backend/.env
+*.sqlite3
+*.db
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/
+
