@@ -94,11 +94,13 @@ Detailed matrices live in [docs/SETUP.md](docs/SETUP.md) and [docs/DEV.md](docs/
 | [docs/DEMO.md](docs/DEMO.md) | **Product:** every page, control, flow, demo script, FAQ. |
 | [docs/DEV.md](docs/DEV.md) | **Product + engineering:** same product depth as DEMO, plus APIs, data model, integrations, ops. |
 | [docs/SETUP.md](docs/SETUP.md) | Environment and verification steps. |
+| [docs/VERCEL.md](docs/VERCEL.md) | Deploy on Vercel (multi-service: Vite + FastAPI). |
 
 ---
 
 ## Deployment notes
 
+- **Vercel (frontend + FastAPI):** See [docs/VERCEL.md](docs/VERCEL.md). Root [`vercel.json`](vercel.json) defines **Vite** at `/` and **FastAPI** at `/_/backend`. Use **PostgreSQL** for `DATABASE_URL` (not SQLite on serverless).
 - **ASGI:** [backend/app/asgi.py](backend/app/asgi.py); production helper: `make backend-prod`.
 - **Docker:** [Dockerfile](Dockerfile) in repo root.
 - **Single host:** build the SPA (`make build-frontend`), set `SERVE_FRONTEND=true` and `FRONTEND_DIST_DIR` so FastAPI can serve static assets alongside `/api`.

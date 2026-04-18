@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+/** Production default matches Vercel multi-service `routePrefix` in root `vercel.json`. */
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.PROD ? "/_/backend" : "http://localhost:8000");
 
 export type ApiError = {
   detail?: string;
